@@ -1,6 +1,6 @@
 ### Chamber Temperature v. CO2
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-5-1.png)![](nybg_eda_files/figure-markdown_github/unnamed-chunk-5-2.png)
+![](figure-markdown_github/unnamed-chunk-5-1.png)![](figure-markdown_github/unnamed-chunk-5-2.png)
 
 ### Soil Temperature v. CO2
 
