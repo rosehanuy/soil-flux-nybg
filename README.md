@@ -1,38 +1,38 @@
 ### Chamber Temperature v. CO2
 
-![](figure-markdown_github/unnamed-chunk-5-1.png)![](figure-markdown_github/unnamed-chunk-5-2.png)
+![](eda_png/unnamed-chunk-5-1.png)![](eda_png/unnamed-chunk-5-2.png)
 
 ### Soil Temperature v. CO2
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-6-1.png)![](nybg_eda_files/figure-markdown_github/unnamed-chunk-6-2.png)
+![](eda_png/unnamed-chunk-6-1.png)![](eda_png/unnamed-chunk-6-2.png)
 
 ### Soil Temperature v. Respiration by Collar Type
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](eda_png/unnamed-chunk-7-1.png)
 
 ### Chamber Temperature v. Respiration by Collar Type
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](eda_png/unnamed-chunk-8-1.png)
 
 ### Chamber Temperature by Collar Type
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](eda_png/unnamed-chunk-9-1.png)
 
 ### Soil Temperature by Collar Type
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](eda_png/unnamed-chunk-10-1.png)
 
 ### Respiration by Collar Type
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](eda_png/unnamed-chunk-11-1.png)
 
 ### Scatterplot Matrix - correlations between all variables
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](eda_png/unnamed-chunk-12-1.png)
 
 ### Comparison of NDVI Measurements
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-13-1.png)![](nybg_eda_files/figure-markdown_github/unnamed-chunk-13-2.png)
+![](eda_png/unnamed-chunk-13-1.png)![](eda_png/unnamed-chunk-13-2.png)
 
 ### Fitting multiple regression models
 
@@ -148,24 +148,24 @@ summary(mod4) # r2 = .996, variables p < .00
 
 ### Plot residuals for Model 4
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![](eda_png/unnamed-chunk-18-1.png)
 
 ### Measured vs. Predicted seasonal mean respiration using Model 4
 
     ## [1] 77.68698
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-20-1.png)
+![](eda_png/unnamed-chunk-20-1.png)
 
     ## [1] 86.2923
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-20-2.png)
+![](eda_png/unnamed-chunk-20-2.png)
 
 ### Measured vs. Predicted seasonal median respiration using Model 4
 
     ## [1] 102.817
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-22-1.png)
+![](eda_png/unnamed-chunk-22-1.png)
 
     ## [1] 116.9311
 
-![](nybg_eda_files/figure-markdown_github/unnamed-chunk-22-2.png)
+![](eda_png/unnamed-chunk-22-2.png)
