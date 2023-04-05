@@ -1,0 +1,276 @@
+---
+title: "LDEO June-October EDA"
+output: html_document
+date: "2023-03-30"
+
+---
+
+```{r setup, include=FALSE, echo=FALSE, eval=TRUE}
+
+require("knitr")
+opts_knit$set(root.dir = "C:\\Users\\roseh\\Desktop\\NYBG_R\\Lamont\\data")
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+```{r echo=FALSE, eval=TRUE}
+library(tidyverse)
+library(lubridate)
+library(GGally)
+library(rstudioapi)
+
+```
+
+
+
+```{r echo=FALSE, eval=TRUE}
+df <- read_csv("C:\\Users\\roseh\\Desktop\\NYBG_R\\Lamont\\data\\lamont_all_main.csv")
+# convert data types
+df$date <- mdy(df$date)
+df$type <- as.factor(df$type)
+
+df <- df %>%
+  filter(lin_flux < 40)
+
+# create df of mean values
+df.m <- df %>%
+  group_by(date,type) %>%
+  summarize(mean_res = mean(lin_flux,na.rm=T),
+            mean_temp = mean(chamber_temp,na.rm=T),
+            mean_ndvi = mean(hh_ndvi,na.rm=T),
+            mean_soil = mean(soil_temp,na.rm=T))
+
+```
+
+
+```{r echo=FALSE, eval=TRUE}
+# function to plot temp v respiration
+all_data_plot <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=lin_flux)) +
+    geom_point(aes(x=x,y=lin_flux,color=type)) + 
+    geom_smooth() +
+    ggtitle('Lamont All Data, June-Oct.') +
+    xlab(xlab) +
+    ylab('micromol CO2/m^2/s')
+}
+# function to plot mean temps v mean respiration
+mean_data_plot <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=mean_res)) +
+    geom_point(aes(x=x,y=mean_res,color=type)) + 
+    geom_smooth() +
+    ggtitle('Lamont Mean Values, June-Oct.') +
+    xlab(xlab)+
+    ylab('micromol CO2/m^2/s')
+}
+
+# function to plot facet wrap
+facet_plot <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=lin_flux)) +
+    geom_point(aes(x=x,y=lin_flux,color=type)) + 
+    geom_smooth() +
+    facet_wrap(~type,nrow=2) +
+    ggtitle('Lamont All Data, June-Oct') +
+    xlab(xlab)+
+    ylab('micromol CO2/m^2/s')
+}
+
+facet_means <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=mean_res)) +
+    geom_point(aes(x=x,y=mean_res,color=type)) + 
+    geom_smooth() +
+    facet_wrap(~type,nrow=2) +
+    ggtitle('Lamont Mean Values, June-Oct') +
+    xlab(xlab)+
+    ylab('micromol CO2/m^2/s')
+}
+
+```
+
+```{r echo=FALSE, eval=TRUE}
+
+# function to make boxplots of temperature and respiration by type
+make_boxplot <- function(df,y,ylab){
+  ggplot(df)+
+    geom_boxplot(aes(x=type, y=y,fill=type)) +
+    ggtitle('Lamont All Data, June-Oct ' , ylab) +
+    xlab('Type')+
+    ylab(ylab)
+}
+
+```
+
+
+
+### Chamber Temperature v. CO2 
+
+```{r echo=FALSE, eval=TRUE}
+
+# plot chamber temp and soil temp v respiration
+all_data_plot(df,df$chamber_temp,'Chamber Temperature')
+mean_data_plot(df.m,df.m$mean_temp,'Chamber Temperature')
+
+
+```
+
+### Soil Temperature v. CO2 
+
+```{r echo=FALSE, eval=TRUE}
+
+all_data_plot(df,df$soil_temp,'Soil Temperature')
+mean_data_plot(df.m,df.m$mean_soil,'Soil Temperature')
+
+
+```
+
+### Soil Temperature v. Respiration by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+# plot temp v. resp by type
+facet_plot(df,df$soil_temp,'Soil Temperature')
+
+```
+
+### Chamber Temperature v. Respiration by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+facet_plot(df,df$chamber_temp,'Chamber Temperature')
+```
+
+### Chamber Temperature by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+df2 <- df %>%
+  mutate(type=fct_reorder(.f = type, .x = chamber_temp, .fun = median, na.rm = T))
+make_boxplot(df2,df2$chamber_temp,'Chamber Temperature')
+```
+
+### Soil Temperature by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+
+df4 <- df %>%
+  mutate(type=fct_reorder(.f=type,.x=soil_temp,.fun=median,na.rm=T))
+make_boxplot(df4,df4$soil_temp,'Soil Temperature')
+
+```
+
+### Respiration by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+
+df3 <- df %>%
+  mutate(type=fct_reorder(.f = type, .x = lin_flux, .fun = median, na.rm = T))
+make_boxplot(df3,df3$lin_flux,'Respiration')
+
+```
+
+### Scatterplot Matrix - correlations between all variables
+
+```{r echo=FALSE, eval=TRUE}
+m.res <- df.m$mean_res
+m.temp <- df.m$mean_temp
+m.ndvi <- df.m$mean_ndvi
+m.soil <- df.m$mean_soil
+df5 <- tibble(m.res,m.temp,m.ndvi,m.soil)
+ggpairs(df5)
+```
+
+### NDVI v. Respiration
+
+```{r echo=FALSE, eval=TRUE}
+
+ndvi <- df %>%
+  filter(!is.na(hh_ndvi))
+
+ggplot(ndvi,aes(x=hh_ndvi,y=lin_flux)) +
+  geom_point(aes(x=hh_ndvi,y=lin_flux,color=type)) +
+  ylab('Respiration') +
+  xlab('NDVI') +
+  ggtitle('NDVI v. Respiration') 
+
+ggplot(ndvi,aes(x=hh_ndvi,y=lin_flux)) +
+  geom_point(aes(x=hh_ndvi,y=lin_flux,color=type)) +
+  ylab('Respiration') +
+  xlab('NDVI') +
+  ggtitle('NDVI v. Respiration, by collar type') +
+  facet_wrap(~type,nrow=2)
+
+
+```
+
+
+
+### Fitting multiple regression models
+
+Model 1. Linear Model: respiration = b0 + chamber temperature + ndvi
+
+```{r echo=FALSE, eval = TRUE}
+
+mod1 <- lm(mean_res ~ mean_temp + mean_ndvi,df.m)
+summary(mod1) 
+
+```
+
+Model 2. Linear model: respiration = b0 + soil temperature + ndvi
+
+```{r}
+mod2 <- lm(mean_res ~ mean_soil + mean_ndvi,df.m)
+summary(mod2)
+```
+
+Model 3. Log transformation: respiration = b0 + log(soil temp) + log(ndvi)
+
+```{r}
+
+mod3 <- lm(mean_res ~ I(log(mean_soil)) + mean_ndvi,df.m)
+summary(mod3) 
+```
+
+Model 4. Exponential model: respiration = b0 + exp(soil temperature + ndvi)
+
+```{r}
+
+mod4 <- lm(log(mean_res) ~ mean_soil + mean_ndvi,df.m) 
+summary(mod4)
+
+```
+
+### Fitting simple regression models
+
+Model 5. Quadratic model: respiration = b0 + soil temperature + (soil temperature)^2
+
+```{r}
+
+mod5 <- lm(mean_res ~ mean_soil + I(mean_soil**2),df.m) 
+summary(mod5)
+```
+Model 6: Polynomial model: respiration = b0 + soil temp + soil temp^2 + soil temp^3
+
+```{r}
+library(splines)
+
+mod6 <- lm(mean_res ~ ns(mean_soil,3),df.m)
+summary(mod6)
+```
+```{r}
+library(modelr)
+
+grid <- df.m%>% 
+  data_grid(mean_soil = mean_soil) %>% 
+  gather_predictions(mod5, mod6, .pred = "mean_res")
+
+ggplot(df.m, aes(mean_soil, mean_res)) + 
+  geom_point() +
+  geom_line(data = grid, colour = "red") +
+  facet_wrap(~ model)
+```
+```{r}
+mod7 <- lm(log(mean_res) ~ mean_soil + I(mean_soil**2) + mean_ndvi,df.m)
+summary(mod7)
+```
+
+
+
+
+
+

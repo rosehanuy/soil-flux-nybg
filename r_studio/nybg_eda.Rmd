@@ -1,0 +1,314 @@
+---
+title: "NYBG May-Nov EDA"
+output:
+  md_document:
+    variant: markdown_github
+date: "2023-03-28"
+
+---
+
+```{r setup, include=FALSE, echo=FALSE, eval=TRUE}
+
+require("knitr")
+opts_knit$set(root.dir = "C:\\Users\\roseh\\Desktop\\NYBG_R\\data")
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+```{r echo=FALSE, eval=TRUE}
+library(tidyverse)
+library(lubridate)
+library(GGally)
+library(rstudioapi)
+
+```
+
+
+
+```{r echo=FALSE, eval=TRUE}
+df <- read_csv('C:\\Users\\roseh\\Desktop\\NYBG_R\\data\\nybg_all_main.csv')
+# convert data types
+df$date <- mdy(df$date)
+df$type <- as.factor(df$type)
+# filter out SV category
+df <- df %>%
+  filter(type != 'SV')
+# create df of mean values
+df.m <- df %>%
+  group_by(date,type) %>%
+  summarize(mean_res = mean(Res,na.rm=T),
+            mean_temp = mean(Chamber_Temp,na.rm=T),
+            mean_ndvi = mean(hh_ndvi,na.rm=T),
+            mean_soil = mean(`Soil temperature`,na.rm=T))
+
+```
+
+
+```{r echo=FALSE, eval=TRUE}
+# function to plot temp v respiration
+all_data_plot <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=Res)) +
+    geom_point(aes(x=x,y=Res,color=type)) + 
+    geom_smooth() +
+    ggtitle('NYBG All Data, May-Nov.') +
+    xlab(xlab) +
+    ylab('micromol CO2/m^2/s')
+}
+# function to plot mean temps v mean respiration
+mean_data_plot <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=mean_res)) +
+    geom_point(aes(x=x,y=mean_res,color=type)) + 
+    geom_smooth() +
+    ggtitle('NYBG All Data Means, May-Nov.') +
+    xlab(xlab)+
+    ylab('micromol CO2/m^2/s')
+}
+
+# function to plot facet wrap
+facet_plot <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=Res)) +
+    geom_point(aes(x=x,y=Res,color=type)) + 
+    geom_smooth() +
+    facet_wrap(~type,nrow=2) +
+    ggtitle('NYBG All Data, May-Nov.') +
+    xlab(xlab)+
+    ylab('micromol CO2/m^2/s')
+}
+
+facet_means <- function(df,x,xlab){
+  ggplot(df, aes(x=x,y=mean_res)) +
+    geom_point(aes(x=x,y=mean_res,color=type)) + 
+    geom_smooth() +
+    facet_wrap(~type,nrow=2) +
+    ggtitle('NYBG Mean Data, May-Nov.') +
+    xlab(xlab)+
+    ylab('micromol CO2/m^2/s')
+}
+
+```
+
+```{r echo=FALSE, eval=TRUE}
+
+# function to make boxplots of temperature and respiration by type
+make_boxplot <- function(df,y,ylab){
+  ggplot(df)+
+    geom_boxplot(aes(x=type, y=y,fill=type)) +
+    ggtitle('NYBG All Data, May-Sept: ' , ylab) +
+    xlab('Type')+
+    ylab(ylab)
+}
+
+```
+
+
+
+### Chamber Temperature v. CO2 
+
+```{r echo=FALSE, eval=TRUE}
+
+# plot chamber temp and soil temp v respiration
+all_data_plot(df,df$Chamber_Temp,'Chamber Temperature')
+mean_data_plot(df.m,df.m$mean_temp,'Chamber Temperature')
+
+
+```
+
+### Soil Temperature v. CO2 
+
+```{r echo=FALSE, eval=TRUE}
+
+all_data_plot(df,df$`Soil temperature`,'Soil Temperature')
+mean_data_plot(df.m,df.m$mean_soil,'Soil Temperature')
+
+
+```
+
+### Soil Temperature v. Respiration by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+# plot temp v. resp by type
+facet_plot(df,df$`Soil temperature`,'Soil Temperature')
+
+```
+
+### Chamber Temperature v. Respiration by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+facet_plot(df,df$Chamber_Temp,'Chamber Temperature')
+```
+
+### Chamber Temperature by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+df2 <- df %>%
+  mutate(type=fct_reorder(.f = type, .x = Chamber_Temp, .fun = median, na.rm = T))
+make_boxplot(df2,df2$Chamber_Temp,'Chamber Temperature')
+```
+
+### Soil Temperature by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+
+df4 <- df %>%
+  mutate(type=fct_reorder(.f=type,.x=`Soil temperature`,.fun=median,na.rm=T))
+make_boxplot(df4,df4$`Soil temperature`,'Soil Temperature')
+
+```
+
+### Respiration by Collar Type
+
+```{r echo=FALSE, eval=TRUE}
+
+df3 <- df %>%
+  mutate(type=fct_reorder(.f = type, .x = Res, .fun = median, na.rm = T))
+make_boxplot(df3,df3$Res,'Respiration')
+
+```
+
+### Scatterplot Matrix - correlations between all variables
+
+```{r echo=FALSE, eval=TRUE}
+m.res <- df.m$mean_res
+m.temp <- df.m$mean_temp
+m.ndvi <- df.m$mean_ndvi
+m.soil <- df.m$mean_soil
+df5 <- tibble(m.res,m.temp,m.ndvi,m.soil)
+ggpairs(df5)
+```
+
+### Comparison of NDVI Measurements
+
+```{r echo=FALSE, eval=TRUE}
+
+ndvi <- df %>%
+  filter(!is.na(hh_ndvi))
+  
+# compare ndvi measurements from different sources
+ndvi <- df %>%
+  filter(!is.na(hh_ndvi)) %>%
+  pivot_longer(cols=c('sentinel_ndvi','sentinel_evi'),
+               names_to = 'data_source',values_to = 'value')
+
+ggplot(ndvi,aes(x=hh_ndvi,y=value,color=data_source)) +
+  geom_point() +
+  ylab('Satellite NDVI / EVI') +
+  xlab('In Situ NDVI') +
+  ggtitle('In Situ NDVI v. Satellite') +
+  facet_wrap(~data_source,nrow=2)
+
+
+ndvi2 <- df %>% 
+  filter(!is.na(hh_ndvi)) %>%
+  pivot_longer(cols=c('hh_ndvi','sentinel_ndvi','sentinel_evi'),
+               names_to = 'data_source',values_to = 'value')
+               
+ggplot(ndvi2,aes(x=Res,y=value,color=data_source)) +
+  geom_point() +
+  ylab('NDVI / EVI') +
+  xlab('Respiration') +
+  ggtitle('NDVI v. Respiration') +
+  facet_wrap(~data_source,nrow=2)
+
+```
+
+### Fitting multiple regression models
+
+Model 1. Linear Model: respiration = b0 + chamber temperature + ndvi
+
+```{r echo=FALSE, eval = TRUE}
+
+mod1 <- lm(mean_res ~ mean_temp + mean_ndvi,df.m)
+summary(mod1) # r2 = .906, mean_temp not significant
+
+```
+
+Model 2. Linear model: respiration = b0 + soil temperature + ndvi
+
+```{r}
+mod2 <- lm(mean_res ~ mean_soil + mean_ndvi,df.m)
+summary(mod2) # r2 = .964, mean_soil p = .06
+```
+
+Model 3. Log transformation: respiration = b0 + log(soil temp) + log(ndvi)
+
+```{r}
+
+mod3 <- lm(mean_res ~ I(log(mean_soil)) + I(log(mean_ndvi)),df.m)
+summary(mod3) # r2 = .943, mean_soil p = .08
+```
+
+Model 4. Exponential model: respiration = b0 + exp(soil temperature + ndvi)
+
+```{r}
+
+mod4 <- lm(log(mean_res) ~ mean_soil + mean_ndvi,df.m) # significant!!
+summary(mod4) # r2 = .996, variables p < .00
+```
+
+### Plot residuals for Model 4
+
+```{r echo=FALSE, eval=TRUE}
+ggplot(mod4,aes(x=.fitted,y=.resid))+
+  geom_point()+
+  geom_hline(yintercept=0)
+```
+
+```{r echo=FALSE, eval=TRUE}
+season <- read_csv('seasonal_means_may_nov.csv')
+
+lst.seq <- season$lst
+ndvi.seq <- season$ndvi
+evi.seq <- season$evi
+
+compare_plot <- function(x2,title){
+  predicted <- exp(predict(mod4, newdata=data.frame(mean_soil=lst.seq,
+                                                    mean_ndvi=x2))) 
+  df.plot <- cbind(season,predicted)
+  print(sum(df.plot$predicted))
+  ggplot(df.plot,aes(x=res,y=predicted)) +
+    geom_point() +
+    ylim(5,25) +
+    ggtitle(title)
+  
+  
+}
+
+```
+
+### Measured vs. Predicted seasonal mean respiration using Model 4
+
+```{r echo=FALSE, eval=TRUE}
+compare_plot(ndvi.seq,'Measured v. Predicted Mean R, x1 = LST, x2 = NDVI')
+compare_plot(evi.seq, 'Measured v. Predicted Mean R, x1 = LST, x2 = EVI')
+```
+
+
+
+```{r echo=FALSE, eval=TRUE}
+# compare measured vs. predicted median respiration
+season.med <- read_csv('seasonal_medians_may_nov.csv')
+
+lst.seq.d <- season.med$lst
+ndvi.seq.d <- season.med$ndvi
+evi.seq.d <- season.med$evi
+
+compare_plot_med <- function(x2,title){
+  predicted <- exp(predict(mod4, newdata=data.frame(mean_soil=lst.seq.d,
+                                                    mean_ndvi=x2))) 
+  df.plot <- cbind(season,predicted)
+  print(sum(df.plot$predicted))
+  ggplot(df.plot,aes(x=res,y=predicted)) +
+    geom_point() +
+    ylim(5,25) +
+    ggtitle(title)
+  
+}
+```
+
+### Measured vs. Predicted seasonal median respiration using Model 4
+
+```{r echo=FALSE, eval=TRUE}
+compare_plot_med(ndvi.seq.d,'Measured v. Predicted Median R, x1 = LST, x2 = NDVI')
+compare_plot_med(evi.seq.d,'Measured v. Predicted Median R, x1 = LST, x2 = EVI')
+```
+
