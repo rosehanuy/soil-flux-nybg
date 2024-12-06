@@ -1,3 +1,5 @@
+This repository houses the exploratory data analysis conducted on one-season's worth of soil respiration data collected at the New York Botanical Garden in the Bronx. CO2 flux was measured using a Licor 7810 portable infrared gas analyzer in managed and unmanaged lawns over the course of the growing season.
+
 ### Chamber Temperature v. CO2
 
 ![](eda_png/unnamed-chunk-5-1.png)![](eda_png/unnamed-chunk-5-2.png)
